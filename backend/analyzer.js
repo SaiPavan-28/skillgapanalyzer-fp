@@ -1,4 +1,6 @@
 const skillsDb = require("./skillsDb");
+const resourcesDb = require("./resourcesDb");
+
 
 /**
  * Normalize text: lowercase, remove special chars
@@ -428,4 +430,33 @@ function generateJobRecommendations(resumeSkills) {
     .slice(0, 6);
 }
 
-module.exports = { extractSkills, analyzeSkills, generateFeedback, generateRoadmap, analyzeResumeQuality, generateJobRecommendations };
+/**
+ * Generate learning resources for missing skills
+ */
+function generateResources(missing) {
+  const resources = [];
+  
+  missing.forEach(skill => {
+    const normalizedSkill = skill.toLowerCase();
+    if (resourcesDb[normalizedSkill]) {
+      resources.push({
+        skill: skill,
+        items: resourcesDb[normalizedSkill]
+      });
+    } else {
+      // Generic fallback resources
+      resources.push({
+        skill: skill,
+        items: [
+          { type: "website", title: `${skill} Documentation`, url: `https://www.google.com/search?q=${encodeURIComponent(skill + " documentation")}` },
+          { type: "youtube", title: `${skill} Tutorial`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(skill + " tutorial")}` }
+        ]
+      });
+    }
+  });
+
+  return resources;
+}
+
+module.exports = { extractSkills, analyzeSkills, generateFeedback, generateRoadmap, analyzeResumeQuality, generateJobRecommendations, generateResources };
+

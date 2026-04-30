@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 import {
   CheckCircle, XCircle, AlertTriangle, ArrowLeft,
   RotateCcw, ChevronRight, Clock, BookOpen, Target, AlertCircle, Sparkles, Briefcase,
-  DollarSign, ExternalLink, TrendingUp
+  DollarSign, ExternalLink, TrendingUp, PlayCircle, Link, FileText, Library
 } from 'lucide-react'
+
 
 // ----- Circular Score Chart -----
 function ScoreRing({ score }) {
@@ -248,7 +249,65 @@ function JobsPanel({ jobs }) {
   )
 }
 
+// ----- Resources Panel -----
+function ResourcesPanel({ resources }) {
+  if (!resources || resources.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Library size={40} className="text-slate-600 mx-auto mb-3" />
+        <p className="text-slate-400 font-semibold">No specific resources found</p>
+        <p className="text-slate-600 text-sm mt-1">Try analyzing a job description with more specific technical skills.</p>
+      </div>
+    )
+  }
+
+  const getIcon = (type) => {
+    switch (type) {
+      case 'youtube': return <PlayCircle size={16} className="text-red-400" />
+      case 'website': return <Link size={16} className="text-blue-400" />
+      case 'pdf': return <FileText size={16} className="text-emerald-400" />
+      default: return <BookOpen size={16} className="text-purple-400" />
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      {resources.map((resGroup, i) => (
+        <div key={i} className="fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+          <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-purple-500" />
+            Learn {resGroup.skill}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {resGroup.items.map((item, j) => (
+              <a
+                key={j}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass p-4 rounded-xl border border-white/5 flex items-center justify-between hover:border-purple-500/30 hover:bg-white/10 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {getIcon(item.type)}
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium leading-tight">{item.title}</p>
+                    <p className="text-slate-500 text-[10px] uppercase tracking-wider mt-1">{item.type}</p>
+                  </div>
+                </div>
+                <ExternalLink size={14} className="text-slate-600 group-hover:text-white transition-colors" />
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ----- Section Header -----
+
 function SectionHeader({ icon, title, subtitle, color = 'text-purple-400' }) {
   return (
     <div className="flex items-center gap-3 mb-6">
@@ -274,14 +333,17 @@ export default function ResultsPage() {
   if (!state?.results) return null
 
   const { results, fileName } = state
-  const { score, matched_skills, missing_skills, feedback, roadmap, resume_issues, job_recommendations } = results
+  const { score, matched_skills, missing_skills, feedback, roadmap, resources, resume_issues, job_recommendations } = results
+
 
   const tabs = [
     { id: 'feedback', label: 'AI Feedback', icon: <Sparkles size={15} /> },
     { id: 'roadmap', label: 'Roadmap', icon: <Target size={15} /> },
+    { id: 'resources', label: 'Resources', icon: <Library size={15} /> },
     { id: 'issues', label: 'Resume Issues', icon: <AlertTriangle size={15} /> },
     { id: 'jobs', label: 'Suitable Jobs', icon: <Briefcase size={15} /> },
   ]
+
 
   return (
     <div className="min-h-screen py-10 px-6 relative">
@@ -430,6 +492,16 @@ export default function ResultsPage() {
                 <RoadmapTimeline items={roadmap} />
               </div>
             )}
+
+            {activeTab === 'resources' && (
+              <div>
+                <p className="text-slate-400 text-sm mb-6">
+                  Hand-picked resources to help you master the missing skills.
+                </p>
+                <ResourcesPanel resources={resources} />
+              </div>
+            )}
+
 
             {activeTab === 'issues' && (
               <div>

@@ -4,7 +4,7 @@ const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const path = require("path");
 
-const { extractSkills, analyzeSkills, generateFeedback, generateRoadmap, analyzeResumeQuality, generateJobRecommendations } = require("./analyzer");
+const { extractSkills, analyzeSkills, generateFeedback, generateRoadmap, analyzeResumeQuality, generateJobRecommendations, generateResources } = require("./analyzer");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -74,7 +74,10 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
     // 7. Job recommendations
     const jobRecommendations = generateJobRecommendations(resumeSkills);
 
-    // 8. Return structured response
+    // 8. Generate learning resources
+    const resources = generateResources(missing);
+
+    // 9. Return structured response
     res.json({
       score,
       matched_skills: matched,
@@ -83,10 +86,12 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
       jd_skills: jdSkills,
       feedback,
       roadmap,
+      resources,
       resume_issues: resumeIssues,
       job_recommendations: jobRecommendations,
       resume_text_preview: resumeText.substring(0, 500) + "...",
     });
+
   } catch (err) {
     console.error("Analysis error:", err);
     if (err.message.includes("PDF")) {
